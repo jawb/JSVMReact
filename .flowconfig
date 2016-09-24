@@ -1,0 +1,7 @@
+[libs]
+JSVM/app/data/decls/types.js
+JSVM/app/data/decls/actions.js
+
+[options]
+module.name_mapper='^app\/\(.*\)$' -> '<PROJECT_ROOT>/JSVM/app/\1'
+suppress_comment= \\(.\\|\n\\)*\\$FlowIssue
