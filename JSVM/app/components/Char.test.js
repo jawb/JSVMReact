@@ -1,31 +1,23 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
-import TestUtils from 'react-addons-test-utils'
+import {mount} from 'enzyme'
 import Char from 'app/components/Char'
 
 
-function setup(char) {
-    const tree = TestUtils.renderIntoDocument(<div><Char char={char} /></div>)
-    const component = tree.children[0]
-    const node = ReactDOM.findDOMNode(component)
-
-    return {component, node}
-}
+const setup = char => mount(<Char char={char} />)
 
 describe('components', () => {
     describe('Char', () => {
         test('should render a char, not a newline', () => {
-            const {node} = setup('a')
-            expect(node.nodeName).toEqual('DIV')
-            expect(node.className).toEqual('char')
-            expect(node.textContent).toEqual('a')
+            const wrapper = setup('a')
+            expect(wrapper.find('div.char').length).toEqual(1)
+            expect(wrapper.find('div.char.char-nl').length).toEqual(0)
+            expect(wrapper.find('div.char').text()).toEqual('a')
         })
 
         test('should render a char, is a newline', () => {
-            const {node} = setup("\n")
-            expect(node.nodeName).toEqual('DIV')
-            expect(node.className).toEqual('char char-nl')
-            expect(node.textContent).toEqual("\n")
+            const wrapper = setup("\n")
+            expect(wrapper.find('div.char.char-nl').length).toEqual(1)
+            expect(wrapper.find('div.char.char-nl').text()).toEqual("\n")
         })
     })
 })

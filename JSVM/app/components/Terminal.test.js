@@ -1,89 +1,71 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
-import TestUtils from 'react-addons-test-utils'
+import {mount} from 'enzyme'
 import {Terminal} from 'app/components/Terminal'
 
 
-function setup(vm) {
-    const props = {
-        vm,
-        dispatch: jest.fn()
-    }
+const setup = vm => {
+    const dispatch = jest.fn()
+    const wrapper = mount(<Terminal vm={vm} dispatch={dispatch} />)
 
-    const component = TestUtils.renderIntoDocument(<Terminal {...props} />)
-    const node = ReactDOM.findDOMNode(component)
-
-    return {component, node, props}
+    return {wrapper, dispatch}
 }
 
 describe('components', () => {
     describe('Terminal', () => {
         it('should render empty terminal', () => {
-            const {node} = setup({ stdout: '', reading: false })
-            expect(node.nodeName).toEqual('DIV')
-            expect(node.className).toEqual('terminal')
-            expect(node.children.length).toEqual(0)
+            const {wrapper} = setup({ stdout: '', reading: false })
+            expect(wrapper.find('div.terminal').length).toEqual(1)
+            expect(wrapper.find('div.terminal').children().length).toEqual(0)
+            expect(wrapper.find('input.terminal-cursor').length).toEqual(0)
         })
 
         it('should render empty terminal with cursor in pos 0', () => {
-            const {node} = setup({ stdout: '', reading: true })
-            expect(node.nodeName).toEqual('DIV')
-            expect(node.className).toEqual('terminal')
-            expect(node.children.length).toEqual(1)
-            const span = node.children[0]
-            expect(span.nodeName).toEqual('SPAN')
-            expect(span.children.length).toEqual(1)
-            const cursor = span.children[0]
-            expect(cursor.nodeName).toEqual('INPUT')
-            expect(cursor.className).toEqual('terminal-cursor')
+            const {wrapper} = setup({ stdout: '', reading: true })
+            expect(wrapper.find('div.terminal').length).toEqual(1)
+            expect(wrapper.find('div.terminal').children().length).toEqual(1)
+            expect(wrapper.find('input.terminal-cursor').length).toEqual(1)
         })
 
-        it('should render terminal with "text" and cursor in pos 0', () => {
-            const {node} = setup({ stdout: 'test', reading: true })
-            expect(node.nodeName).toEqual('DIV')
-            expect(node.className).toEqual('terminal')
-            expect(node.children.length).toEqual(5)
-            const chars = Array.prototype.slice.call(node.children, 0, 4)
-            expect(Array.prototype.map.call(chars, x => x.innerHTML).join('')).toEqual('test')
-            const span = node.children[4]
-            expect(span.nodeName).toEqual('SPAN')
-            expect(span.children.length).toEqual(1)
-            const cursor = span.children[0]
-            expect(cursor.nodeName).toEqual('INPUT')
-            expect(cursor.className).toEqual('terminal-cursor')
+        it('should render terminal with "test" and cursor in pos 0', () => {
+            const {wrapper} = setup({ stdout: 'test', reading: true })
+            expect(wrapper.find('div.terminal').length).toEqual(1)
+            expect(wrapper.find('div.terminal').children().length).toEqual(5)
+            expect(wrapper.find('div.terminal').text()).toEqual('test')
+            expect(wrapper.find('input.terminal-cursor').length).toEqual(1)
+            expect(wrapper.find('div.terminal span').childAt(0).hasClass('terminal-cursor')).toEqual(true)
         })
 
         it('should render terminal with "hello " and cursor in pos 0, then enter "world", move, backspace and ENTER', () => {
-            const {component, node, props} = setup({ stdout: 'hello ', reading: true })
-            const span = node.children[6]
-            const cursor = span.children[0]
+            const {wrapper, dispatch} = setup({ stdout: 'hello ', reading: true })
+
+            const cursor = wrapper.find('input.terminal-cursor')
 
             // enter
-            TestUtils.Simulate.change(cursor, {target: {value: "world"}})
-            expect(component.state).toEqual({input: 'world', cursorPos: 5})
+            cursor.simulate('change', {target: {value: "world"}})
+            expect(wrapper.state()).toEqual({input: 'world', cursorPos: 5})
 
             // move
-            TestUtils.Simulate.keyDown(cursor, {keyCode: 39});
-            expect(component.state.cursorPos).toEqual(5)
-            TestUtils.Simulate.keyDown(cursor, {keyCode: 37});
-            expect(component.state.cursorPos).toEqual(4)
-            for (let i = 0; i <= 8; i++) TestUtils.Simulate.keyDown(cursor, {keyCode: 39});
-            expect(component.state.cursorPos).toEqual(5)
-            for (let i = 0; i <= 8; i++) TestUtils.Simulate.keyDown(cursor, {keyCode: 37})
-            expect(component.state.cursorPos).toEqual(0)
+            cursor.simulate('keyDown', {keyCode: 39})
+            expect(wrapper.state('cursorPos')).toEqual(5)
+            cursor.simulate('keyDown', {keyCode: 37})
+            expect(wrapper.state('cursorPos')).toEqual(4)
+            for (let i = 0; i <= 8; i++) cursor.simulate('keyDown', {keyCode: 39})
+            expect(wrapper.state('cursorPos')).toEqual(5)
+            for (let i = 0; i <= 8; i++) cursor.simulate('keyDown', {keyCode: 37})
+            expect(wrapper.state('cursorPos')).toEqual(0)
 
             // backspace
-            TestUtils.Simulate.change(cursor, {target: {value: "jss "}})
-            expect(component.state.input).toEqual('jss world')
-            TestUtils.Simulate.keyDown(cursor, {keyCode: 8})
-            TestUtils.Simulate.keyDown(cursor, {keyCode: 8})
-            TestUtils.Simulate.change(cursor, {target: {value: " "}})
-            expect(component.state.input).toEqual('js world')
+            cursor.simulate('change', {target: {value: "jss "}})
+            expect(wrapper.state('input')).toEqual('jss world')
+            cursor.simulate('keyDown', {keyCode: 8})
+            cursor.simulate('keyDown', {keyCode: 8})
+            cursor.simulate('change', {target: {value: " "}})
+            expect(wrapper.state('input')).toEqual('js world')
 
             // ENTER
-            TestUtils.Simulate.keyDown(cursor, {keyCode: 13})
-            expect(component.state).toEqual({input: '', cursorPos: 0})
-            expect(props.dispatch).toHaveBeenCalled()
+            cursor.simulate('keyDown', {keyCode: 13})
+            expect(wrapper.state()).toEqual({input: '', cursorPos: 0})
+            expect(dispatch).toHaveBeenCalled()
         })
     })
 })

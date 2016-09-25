@@ -22,6 +22,7 @@
     "babel-preset-stage-2": "^6.13.0",
     "babel-preset-stage-3": "^6.11.0",
     "css-loader": "latest",
+    "enzyme": "^2.4.1",
     "express": "^4.14.0",
     "file-loader": "latest",
     "flow-bin": "^0.32.0",
