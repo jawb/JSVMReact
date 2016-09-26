@@ -1,5 +1,5 @@
 node_modules/
 coverage/
 .DS_Store
-JSVM/public/
-!JSVM/public/index.html
+/JSVM/public/
+!/JSVM/public/index.html
