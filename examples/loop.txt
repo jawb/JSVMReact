@@ -1,0 +1,31 @@
+BEGIN:
+
+DATA x
+PUSH 3
+STORE x
+
+DATA i
+
+loop:
+PUSH 5
+LOAD i
+LT
+
+BEQ endloop
+
+LOAD x
+PUSH 1
+ADD
+STORE x
+
+LOAD i
+PUSH 1
+ADD
+STORE i
+
+JMP loop
+
+endloop:
+LOAD x
+PRINT
+END:
